@@ -1,17 +1,17 @@
 
 {-# LANGUAGE TypeOperators, LiberalTypeSynonyms, RankNTypes,
-             ConstraintKinds, KindSignatures #-}
+             ConstraintKinds, KindSignatures, TypeFamilies,
+             ImpredicativeTypes, PolyKinds, DataKinds #-}
 
 -- | A collection of type-level operators.
-module Control.Type.Operator
-    where
+module Control.Type.Operator where
 
 
-import GHC.Prim (Constraint)
+import Data.Kind
 
 
 -- | A tightly binding version of @->@ that lets you strip parentheses from
--- first-class type-functions. Example:
+-- function types in certain spots. Example:
 --
 -- >>> f :: Maybe Int ^> String
 -- f :: Maybe (Int -> Int)
@@ -46,11 +46,38 @@ infixl 1 &
 type (f $$ a) b = f a b
 infixr 3 $$
 
--- | Syntactic sugar for type constraints, allowing omission of repeat
--- type variables.
+-- | Map a constraint over several variables.
 --
--- >>> a :: (Num % Show) a => a -> String
--- a :: (Num a, Show a) => a -> String
-type (%) (c1 :: * -> Constraint) (c2 :: * -> Constraint) a = (c1 a, c2 a)
-infixr 2 %
+-- >>> a :: Cmap Show [a, b] => a -> b -> String
+-- >>> =
+-- >>> a :: (Show a, Show b) => a -> b -> String
+type family Cmap (c :: k -> Constraint) (ls :: [k]) where
+    Cmap c '[k] = c k
+    Cmap c (h ': t) = (c h, Cmap c t)
+
+-- | Infix 'Cmap'.
+--
+-- >>> a :: Show <=> [a, b] => a -> b -> String
+-- >>> =
+-- >>> a :: (Show a, Show b) => a -> b -> String
+type (c <=> ls) = Cmap c ls
+infixl 9 <=>
+
+-- | Map several constraints over a single variable.
+--
+-- >>> a :: Cfor [Show, Read] a => a -> a
+-- >>> =
+-- >>> a :: (Num a, Show a, Read a) => a -> IO ()
+type family Cfor (c :: [k -> Constraint]) (a :: k) where
+    Cfor '[c] a = c a
+    Cfor (ch ': ct) a = (ch a, Cfor ct a)
+
+-- | Infix 'Cfor'.
+--
+-- >>> a :: [Show, Read] <+> a => a -> a
+-- >>> =
+-- >>> a :: (Num a, Show a, Read a) => a -> IO ()
+type (cs <+> a) = Cfor cs a
+infixl 9 <+>
+
 
