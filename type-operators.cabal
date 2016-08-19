@@ -1,9 +1,9 @@
 name:                type-operators
-version:             0.1.0.0
+version:             0.1.0.2
 synopsis:            Various type-level operators
 description:
-    A set of type-level operators meant to be helpful and make typing less of a
-    chore.
+    A set of type-level operators meant to be helpful, e.g. ($) and a
+    tightly binding (->).
 homepage:            https://github.com/Shou/type-operators#readme
 license:             BSD3
 license-file:        LICENSE
