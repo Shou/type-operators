@@ -17,18 +17,13 @@ import Data.Kind (Constraint)
 #endif
 
 
--- | Empty typeclass constraint.
-class Empty a
-instance Empty a
-
-
 -- | A tightly binding version of @->@ that lets you strip parentheses from
 -- function types in certain spots. Example:
 --
 -- @
 -- f :: Maybe Int ^> String
 -- =
--- f :: Maybe (Int -> Int)
+-- f :: Maybe (Int -> String)
 -- @
 type (^>) = (->)
 infixr 5 ^>
@@ -37,6 +32,8 @@ infixr 5 ^>
 --
 -- @
 -- f :: Maybe String <^ Int
+-- =
+-- f :: Maybe (Int -> String)
 -- @
 --
 -- Note: this is not partially applied like '^>' and @->@.
@@ -63,14 +60,14 @@ infixr 2 $
 type a & f = f a
 infixl 1 &
 
--- | Infix application that takes a two arguments rather than just one.
+-- | Infix application that can take two arguments in combination with '$'.
 --
 -- @
--- f :: Either $$ Int ^> Int $ Int
+-- f :: Either $$ Int ^> Int $ Int ^> Int
 -- =
--- f :: Either (Int -> Int) Int
+-- f :: Either (Int -> Int) (Int -> Int)
 -- @
-type (f $$ a) b = f a b
+type (f $$ a) = f a
 infixr 3 $$
 
 -- | Map a constraint over several variables.
@@ -81,7 +78,7 @@ infixr 3 $$
 -- a :: (Show a, Show b) => a -> b -> String
 -- @
 type family (<=>) (c :: k -> Constraint) (as :: [k]) where
-    (<=>) c '[k] = c k
+    (<=>) c '[] = (() :: Constraint)
     (<=>) c (h ': t) = (c h, (<=>) c t)
 infixl 9 <=>
 
@@ -93,8 +90,7 @@ infixl 9 <=>
 -- a :: (Show a, Read a) => a -> a
 -- @
 type family (<+>) (c :: [k -> Constraint]) (a :: k) where
-    (<+>) '[] a = Empty a
-    (<+>) '[c] a = c a
+    (<+>) '[] a = (() :: Constraint)
     (<+>) (ch ': ct) a = (ch a, (<+>) ct a)
 infixl 9 <+>
 

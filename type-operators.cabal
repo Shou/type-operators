@@ -1,5 +1,5 @@
 name:                type-operators
-version:             0.1.0.2
+version:             0.1.0.4
 synopsis:            Various type-level operators
 description:
     A set of type-level operators meant to be helpful, e.g. ($) and a
