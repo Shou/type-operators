@@ -2,7 +2,7 @@
 {-# LANGUAGE TypeOperators, LiberalTypeSynonyms, RankNTypes,
              ConstraintKinds, KindSignatures, TypeFamilies,
              PolyKinds, DataKinds, CPP, MultiParamTypeClasses,
-             UndecidableSuperClasses, FlexibleInstances #-}
+             FlexibleInstances #-}
 
 -- | A collection of type-level operators.
 module Control.Type.Operator ( type (^>), type (<^), type ($), type (&)
@@ -93,4 +93,30 @@ type family (<+>) (c :: [k -> Constraint]) (a :: k) where
     (<+>) '[] a = (() :: Constraint)
     (<+>) (ch ': ct) a = (ch a, (<+>) ct a)
 infixl 9 <+>
+
+-- | Tuple constructor operator
+--
+-- @
+-- a :: String * Int * (Int, Int)
+-- =
+-- a :: (String, Int, (Int, Int))
+-- @
+--
+-- Note: this will flatten tuples on the left-hand-side.
+--
+-- @
+-- a :: (a, b) * c
+-- =
+-- a :: (a, b, c)
+-- @
+type family (*) f1 f2 where
+    (*) (a, b, c, d, e, f, g, h) i = (a, b, c, d, e, f, g, h, i)
+    (*) (a, b, c, d, e, f, g)    h = (a, b, c, d, e, f, g, h)
+    (*) (a, b, c, d, e, f)       g = (a, b, c, d, e, f, g)
+    (*) (a, b, c, d, e)          f = (a, b, c, d, e, f)
+    (*) (a, b, c, d)             e = (a, b, c, d, e)
+    (*) (a, b, c)                d = (a, b, c, d)
+    (*) (a, b)                   c = (a, b, c)
+    (*) a                        b = (a, b)
+infixl 9 *
 
