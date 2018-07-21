@@ -1,8 +1,5 @@
 
-{-# LANGUAGE TypeOperators, LiberalTypeSynonyms, RankNTypes,
-             ConstraintKinds, KindSignatures, TypeFamilies,
-             PolyKinds, DataKinds, CPP, MultiParamTypeClasses,
-             FlexibleInstances #-}
+{-# LANGUAGE CPP, TypeOperators, DataKinds, PolyKinds, TypeFamilies #-}
 
 -- | A collection of type-level operators.
 module Control.Type.Operator ( type (^>), type (<^), type ($), type (&)
@@ -13,7 +10,7 @@ module Control.Type.Operator ( type (^>), type (<^), type ($), type (&)
 #if __GLASGOW_HASKELL__ <= 710
 import GHC.Prim (Constraint)
 #else
-import Data.Kind (Constraint)
+import Data.Kind (Constraint, Type)
 #endif
 
 
@@ -70,6 +67,8 @@ infixl 1 &
 type (f $$ a) = f a
 infixr 3 $$
 
+{-# DEPRECATED (<=>) "Since (<+>) is now kind-polymorphic and accepts the arguments on either side (<=>) will be removed in a future version." #-}
+
 -- | Map a constraint over several variables.
 --
 -- @
@@ -82,41 +81,21 @@ type family (<=>) (c :: k -> Constraint) (as :: [k]) where
     (<=>) c (h ': t) = (c h, (<=>) c t)
 infixl 9 <=>
 
--- | Map several constraints over a single variable.
+-- | Map any constraints over any type variables.
 --
 -- @
 -- a :: [Show, Read] \<+> a => a -> a
 -- =
 -- a :: (Show a, Read a) => a -> a
+--
+-- a :: Show \<+> [a, b, c] => a -> b -> c -> String
+-- =
+-- a :: (Show a, Show b, Show c) => a -> b -> c -> String
 -- @
-type family (<+>) (c :: [k -> Constraint]) (a :: k) where
-    (<+>) '[] a = (() :: Constraint)
-    (<+>) (ch ': ct) a = (ch a, (<+>) ct a)
+type family (<+>) (a :: k1) (b :: k2) :: Constraint
+type instance (<+>) _ [] = (() :: Constraint)
+type instance (<+>) [] _ = (() :: Constraint)
+type instance (<+>) (c ': cs) (a :: Type) = (c a, a <+> cs)
+type instance (<+>) c (a ': as) = (c a, c <+> as)
 infixl 9 <+>
-
--- | Tuple constructor operator
---
--- @
--- a :: String * Int * (Int, Int)
--- =
--- a :: (String, Int, (Int, Int))
--- @
---
--- Note: this will flatten tuples on the left-hand-side.
---
--- @
--- a :: (a, b) * c
--- =
--- a :: (a, b, c)
--- @
-type family (*) f1 f2 where
-    (*) (a, b, c, d, e, f, g, h) i = (a, b, c, d, e, f, g, h, i)
-    (*) (a, b, c, d, e, f, g)    h = (a, b, c, d, e, f, g, h)
-    (*) (a, b, c, d, e, f)       g = (a, b, c, d, e, f, g)
-    (*) (a, b, c, d, e)          f = (a, b, c, d, e, f)
-    (*) (a, b, c, d)             e = (a, b, c, d, e)
-    (*) (a, b, c)                d = (a, b, c, d)
-    (*) (a, b)                   c = (a, b, c)
-    (*) a                        b = (a, b)
-infixl 9 *
 

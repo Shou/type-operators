@@ -1,9 +1,9 @@
 name:                type-operators
-version:             0.1.0.4
+version:             0.2.0.0
 synopsis:            Various type-level operators
 description:
-    A set of type-level operators meant to be helpful, e.g. ($) and a
-    tightly binding (->).
+    A set of type-level operators meant to be helpful, e.g. ($), a
+    tightly binding (->), and the multi-constraint operator (Show <+> [a, b]).
 homepage:            https://github.com/Shou/type-operators#readme
 license:             BSD3
 license-file:        LICENSE
