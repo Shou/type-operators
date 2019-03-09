@@ -67,7 +67,7 @@ infixl 1 &
 type (f $$ a) = f a
 infixr 3 $$
 
-{-# DEPRECATED (<=>) "Since (<+>) is now kind-polymorphic and accepts the arguments on either side (<=>) will be removed in a future version." #-}
+{-# DEPRECATED (<=>) "Since (\\<+\\>) is now kind-polymorphic and accepts the arguments on either side (\\<=\\>) will be removed in a future version." #-}
 
 -- | Map a constraint over several variables.
 --
